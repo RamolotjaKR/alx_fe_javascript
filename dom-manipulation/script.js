@@ -1,3 +1,12 @@
+// Sync quotes with server: fetch and then post
+async function syncQuotes() {
+	const notification = document.getElementById('notification');
+	notification.textContent = 'Starting sync with server...';
+	await fetchQuotesFromServer();
+	await postQuotesToServer();
+	notification.textContent = 'Sync with server complete.';
+	setTimeout(() => { notification.textContent = ''; }, 4000);
+}
 // Simulate posting quotes to a mock server
 async function postQuotesToServer() {
 	const notification = document.getElementById('notification');
