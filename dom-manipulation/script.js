@@ -4,7 +4,7 @@ async function syncQuotes() {
 	notification.textContent = 'Starting sync with server...';
 	await fetchQuotesFromServer();
 	await postQuotesToServer();
-	notification.textContent = 'Sync with server complete.';
+		notification.textContent = 'Quotes synced with server!';
 	setTimeout(() => { notification.textContent = ''; }, 4000);
 }
 // Simulate posting quotes to a mock server
