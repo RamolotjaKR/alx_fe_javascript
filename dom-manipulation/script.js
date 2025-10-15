@@ -1,3 +1,39 @@
+// Simulate fetching quotes from a mock server and merging with local data
+async function fetchQuotesFromServer() {
+	const notification = document.getElementById('notification');
+	notification.textContent = 'Syncing with server...';
+	try {
+		// Simulate server fetch (replace with your real endpoint if needed)
+		const response = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5');
+		const serverData = await response.json();
+		// Simulate server quotes format: { text, category }
+		const serverQuotes = serverData.map(post => ({
+			text: post.title,
+			category: 'Server'
+		}));
+		let conflicts = 0, added = 0;
+		// Merge: server wins on conflict (replace local quote with same text)
+		serverQuotes.forEach(sq => {
+			const idx = quotes.findIndex(lq => lq.text === sq.text);
+			if (idx !== -1) {
+				quotes[idx] = sq;
+				conflicts++;
+			} else {
+				quotes.push(sq);
+				added++;
+			}
+			if (!categories.includes(sq.category)) categories.push(sq.category);
+		});
+		saveQuotes();
+		populateCategories();
+		filterQuotes();
+		notification.textContent = `Sync complete: ${added} new, ${conflicts} conflicts resolved (server wins).`;
+		setTimeout(() => { notification.textContent = ''; }, 4000);
+	} catch (err) {
+		notification.textContent = 'Server sync failed: ' + err.message;
+		setTimeout(() => { notification.textContent = ''; }, 4000);
+	}
+}
 
 // --- Local Storage Integration ---
 function loadQuotes() {
