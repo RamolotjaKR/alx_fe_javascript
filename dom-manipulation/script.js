@@ -302,3 +302,17 @@ if (lastViewed) {
 	showRandomQuote();
 }
 newQuoteBtn.addEventListener('click', showRandomQuote);
+
+// Wire Sync with Server button if present
+const syncBtn = document.getElementById('syncServerBtn');
+if (syncBtn) syncBtn.addEventListener('click', syncQuotes);
+
+// Periodic automatic sync: run syncQuotes every 2 minutes
+const SYNC_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
+const syncIntervalId = setInterval(() => {
+	// Fire and forget; errors are handled inside syncQuotes
+	syncQuotes();
+}, SYNC_INTERVAL_MS);
+
+// Clear interval on unload to avoid background activity
+window.addEventListener('beforeunload', () => clearInterval(syncIntervalId));
