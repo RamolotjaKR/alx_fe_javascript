@@ -1,3 +1,23 @@
+// Simulate posting quotes to a mock server
+async function postQuotesToServer() {
+	const notification = document.getElementById('notification');
+	notification.textContent = 'Uploading quotes to server...';
+	try {
+		const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(quotes)
+		});
+		if (!response.ok) throw new Error('Server error: ' + response.status);
+		notification.textContent = 'Quotes uploaded to server (simulated).';
+		setTimeout(() => { notification.textContent = ''; }, 4000);
+	} catch (err) {
+		notification.textContent = 'Upload failed: ' + err.message;
+		setTimeout(() => { notification.textContent = ''; }, 4000);
+	}
+}
 // Simulate fetching quotes from a mock server and merging with local data
 async function fetchQuotesFromServer() {
 	const notification = document.getElementById('notification');
