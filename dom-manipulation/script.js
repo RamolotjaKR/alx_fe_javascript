@@ -48,6 +48,43 @@ function createCategorySelector() {
 	quoteDisplay.parentNode.insertBefore(selector, quoteDisplay);
 }
 
+// Populate the visible category filter (<select id="categoryFilter") in the static HTML
+function populateCategories() {
+	const filter = document.getElementById('categoryFilter');
+	if (!filter) return;
+	// Clear existing dynamic options (keep the 'all' option)
+	filter.querySelectorAll('option.dynamic').forEach(o => o.remove());
+	categories.forEach(cat => {
+		const option = document.createElement('option');
+		option.value = cat;
+		option.textContent = cat;
+		option.className = 'dynamic';
+		filter.appendChild(option);
+	});
+	// Restore last selected filter from localStorage
+	const saved = localStorage.getItem('selectedCategory');
+	if (saved) {
+		filter.value = saved;
+	}
+}
+
+function filterQuotes() {
+	const filter = document.getElementById('categoryFilter');
+	if (!filter) return;
+	const val = filter.value;
+	localStorage.setItem('selectedCategory', val);
+	// When filtering, display first matching quote or a message
+	let filtered = val === 'all' ? quotes : quotes.filter(q => q.category === val);
+	if (filtered.length === 0) {
+		quoteDisplay.textContent = 'No quotes available for this category.';
+		return;
+	}
+	const q = filtered[0];
+	quoteDisplay.innerHTML = `<blockquote>"${q.text}"</blockquote><em>- ${q.category}</em>`;
+	// Save last viewed in session to keep session behaviour consistent
+	sessionStorage.setItem('lastViewedQuote', JSON.stringify({ text: q.text, category: q.category }));
+}
+
 function showRandomQuote() {
 	const selector = document.getElementById('categorySelector');
 	const selectedCategory = selector ? selector.value : '';
@@ -95,6 +132,7 @@ function addQuote() {
 	if (!categories.includes(category)) {
 		categories.push(category);
 		createCategorySelector();
+		populateCategories();
 	}
 	textInput.value = '';
 	categoryInput.value = '';
@@ -104,6 +142,14 @@ function addQuote() {
 
 // --- JSON Import/Export ---
 function createImportExportControls() {
+	// If static controls exist in HTML (we added them), wire them. Otherwise create dynamic controls.
+	const staticExport = document.getElementById('exportQuotesBtn');
+	const staticImport = document.getElementById('importFile');
+	if (staticExport && staticImport) {
+		document.getElementById('exportQuotesBtn').onclick = exportQuotesToJson;
+		document.getElementById('importFile').onchange = importFromJsonFile;
+		return;
+	}
 	let controls = document.getElementById('importExportControls');
 	if (controls) controls.remove();
 	controls = document.createElement('div');
@@ -149,6 +195,7 @@ function importFromJsonFile(event) {
 			});
 			saveQuotes();
 			createCategorySelector();
+			populateCategories();
 			alert(`Quotes imported successfully! (${added} added)`);
 			showRandomQuote();
 		} catch (err) {
@@ -163,6 +210,19 @@ function importFromJsonFile(event) {
 createCategorySelector();
 createAddQuoteForm();
 createImportExportControls();
+populateCategories();
+
+// Wire the static category filter to filterQuotes
+const staticFilter = document.getElementById('categoryFilter');
+if (staticFilter) {
+	staticFilter.addEventListener('change', filterQuotes);
+	// Apply saved filter immediately
+	const savedFilter = localStorage.getItem('selectedCategory');
+	if (savedFilter) {
+		staticFilter.value = savedFilter;
+		filterQuotes();
+	}
+}
 
 // Restore last viewed quote from sessionStorage if available
 const lastViewed = sessionStorage.getItem('lastViewedQuote');
